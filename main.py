@@ -1,8 +1,17 @@
-from selenium import webdriver
-from bs4 import BeautifulSoup
-# import requests
-import time
 import json
+import os
+import time
+
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+
+
+def descargar_img(image_url):
+    img_data = requests.get(image_url).content
+    with open('./exports/minuta.jpg', 'wb') as handler:
+        handler.write(img_data)
+    pass
 
 
 def obtener_minuta(filename):
@@ -39,11 +48,21 @@ def buscar_en_minuta(filename):
     
     minuta_json = json.dumps(minuta, indent=4)
     
-    with open('minuta.json', 'w') as f:
+    print(title)
+    print(img_url)
+    
+    descargar_img(img_url)
+    
+    with open('./exports/minuta.json', 'w') as f:
         f.write(minuta_json)
     pass
 
 if __name__ == "__main__":
-    filename = "./minuta.html"
+    
+    if not os.path.exists('./exports'):
+        os.makedirs('./exports')
+        
+    filename = "./exports/minuta.html"
+    
     obtener_minuta(filename)
     buscar_en_minuta(filename)
