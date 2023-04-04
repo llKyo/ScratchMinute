@@ -1,20 +1,27 @@
 import json
 import os
 import time
-
 import requests
+
+from datetime import datetime
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from PIL import Image
 
+def abrir_img(r_img):
+    
+    image = Image.open(r_img)
+    image.show()
+    pass
 
-def descargar_img(image_url):
-    img_data = requests.get(image_url).content
-    with open('./exports/minuta.jpg', 'wb') as handler:
+def descargar_img(r_html, r_img):
+    img_data = requests.get(r_html).content
+    with open(r_img, 'wb') as handler:
         handler.write(img_data)
     pass
 
 
-def obtener_minuta(filename):
+def obtener_minuta(r_html):
     website = "https://dgaeapucv.cl/casino/#casacentral"
 
     browser = webdriver.Chrome()
@@ -24,7 +31,7 @@ def obtener_minuta(filename):
 
     html_txt = html.get_attribute('innerHTML')
 
-    with open(filename, 'w') as f:
+    with open(r_html, 'w') as f:
         f.write(html_txt)
 
     browser.quit()
@@ -32,9 +39,9 @@ def obtener_minuta(filename):
     pass
 
 
-def buscar_en_minuta(filename):
+def buscar_en_minuta(r_html, r_img, r_json):
     
-    with open(filename) as fp:
+    with open(r_html) as fp:
         soup = BeautifulSoup(fp, 'html.parser')
     
     title = soup.find("p").text
@@ -51,18 +58,31 @@ def buscar_en_minuta(filename):
     print(title)
     print(img_url)
     
-    descargar_img(img_url)
+    descargar_img(img_url, r_img)
     
-    with open('./exports/minuta.json', 'w') as f:
+    with open(r_json, 'w') as f:
         f.write(minuta_json)
     pass
 
 if __name__ == "__main__":
     
-    if not os.path.exists('./exports'):
-        os.makedirs('./exports')
-        
-    filename = "./exports/minuta.html"
+    r_root = "./exports/"
     
-    obtener_minuta(filename)
-    buscar_en_minuta(filename)
+    if not os.path.exists(r_root):
+        os.makedirs(r_root)
+        
+    now = datetime.now()
+    now_format = now.strftime("%Y%d%m_%H%M%S/")
+
+    r_main = r_root + now_format
+    
+    if not os.path.exists(r_main):
+        os.makedirs(r_main)
+    
+    r_html = r_main + "minuta.html"
+    r_img  = r_main + "minuta.jpg"
+    r_json = r_main + "minuta.json"
+    
+    obtener_minuta(r_html)
+    buscar_en_minuta(r_html, r_img, r_json)
+    abrir_img(r_img)
